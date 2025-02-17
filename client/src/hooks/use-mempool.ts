@@ -10,12 +10,13 @@ export function useMempool() {
   const connect = useCallback(() => {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
+
     const ws = new WebSocket(wsUrl);
-    
+
     ws.onopen = () => {
       setIsConnected(true);
       setError(null);
+      console.log('Connected to websocket');
     };
 
     ws.onmessage = (event) => {
@@ -25,6 +26,7 @@ export function useMempool() {
 
     ws.onclose = () => {
       setIsConnected(false);
+      console.log('Disconnected, attempting to reconnect...');
       // Attempt to reconnect after 5 seconds
       setTimeout(connect, 5000);
     };
