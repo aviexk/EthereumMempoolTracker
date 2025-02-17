@@ -8,47 +8,33 @@ export function useMempool() {
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
   const connect = useCallback(() => {
-    try {
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+      setIsConnected(true);
+      setError(null);
+    };
 
-      console.log('Connecting to WebSocket:', wsUrl);
-      const ws = new WebSocket(wsUrl);
+    ws.onmessage = (event) => {
+      const tx = JSON.parse(event.data);
+      setTransactions((prev) => [tx, ...prev].slice(0, 100)); // Keep last 100 transactions
+    };
 
-      ws.onopen = () => {
-        console.log('WebSocket connected');
-        setIsConnected(true);
-        setError(null);
-      };
+    ws.onclose = () => {
+      setIsConnected(false);
+      // Attempt to reconnect after 5 seconds
+      setTimeout(connect, 5000);
+    };
 
-      ws.onmessage = (event) => {
-        try {
-          const tx = JSON.parse(event.data);
-          console.log('Received transaction:', tx.hash);
-          setTransactions((prev) => [tx, ...prev].slice(0, 100)); // Keep last 100 transactions
-        } catch (e) {
-          console.error('Error processing message:', e);
-        }
-      };
+    ws.onerror = () => {
+      setError("Failed to connect to mempool");
+      ws.close();
+    };
 
-      ws.onclose = () => {
-        console.log('WebSocket disconnected');
-        setIsConnected(false);
-        // Attempt to reconnect after 5 seconds
-        setTimeout(connect, 5000);
-      };
-
-      ws.onerror = (e) => {
-        console.error('WebSocket error:', e);
-        setError("Failed to connect to mempool");
-        ws.close();
-      };
-
-      setSocket(ws);
-    } catch (e) {
-      console.error('Error creating WebSocket:', e);
-      setError("Failed to create WebSocket connection");
-    }
+    setSocket(ws);
   }, []);
 
   useEffect(() => {

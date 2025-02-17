@@ -19,13 +19,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Process transactions in batches
   async function processPendingTransactions() {
-    if (pendingTxs.length === 0) {
-      // Schedule next check
-      setTimeout(processPendingTransactions, 1000 / RATE_LIMIT);
-      return;
-    }
-
-    console.log(`Processing ${Math.min(BATCH_SIZE, pendingTxs.length)} transactions from queue of ${pendingTxs.length}`);
+    if (pendingTxs.length === 0) return;
 
     // Take first BATCH_SIZE transactions
     const batch = pendingTxs.splice(0, BATCH_SIZE);
@@ -33,10 +27,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     for (const txHash of batch) {
       try {
         const tx = await provider.getTransaction(txHash);
-        if (!tx) {
-          console.log(`Transaction ${txHash} not found`);
-          continue;
-        }
+        if (!tx) continue;
 
         const transaction = {
           hash: tx.hash,
@@ -61,12 +52,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             client.send(JSON.stringify(stored));
           }
         });
-
-        console.log(`Processed and broadcast transaction ${tx.hash}`);
       } catch (error: any) {
         if (error?.error?.code === -32007) {
           // Rate limit hit - add back to queue
-          console.log(`Rate limit hit, requeueing transaction ${txHash}`);
           pendingTxs.push(txHash);
         } else {
           console.error("Error processing transaction:", error);
@@ -74,25 +62,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
 
-    // Schedule next batch
-    setTimeout(processPendingTransactions, 1000 / RATE_LIMIT);
+    // Schedule next batch after delay
+    setTimeout(() => {
+      processPendingTransactions();
+    }, 1000 / RATE_LIMIT);
   }
-
-  // Initialize WebSocket connection handlers
-  wss.on('connection', (ws) => {
-    console.log('Client connected to WebSocket');
-
-    ws.on('close', () => {
-      console.log('Client disconnected from WebSocket');
-    });
-  });
 
   // Start processing loop
   processPendingTransactions();
 
-  // Listen for new transactions
-  provider.on("pending", (txHash) => {
-    console.log(`Received pending transaction: ${txHash}`);
+  provider.on("pending", async (txHash) => {
     pendingTxs.push(txHash);
   });
 
