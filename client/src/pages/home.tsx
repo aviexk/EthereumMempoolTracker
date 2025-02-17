@@ -20,11 +20,11 @@ export default function Home() {
   }, [error, toast]);
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-[#1a1b1f] p-6">
       <div className="container mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Ethereum Mempool Tracker</h1>
-          <div className="flex items-center gap-2">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold mb-2 text-[#9d7dda]">Ethereum Mempool Tracker</h1>
+          <div className="flex items-center justify-center gap-2">
             <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
             <span className="text-sm text-muted-foreground">
               {isConnected ? 'Connected to Mempool' : 'Disconnected'}
@@ -32,9 +32,9 @@ export default function Home() {
           </div>
         </div>
 
-        <Card>
+        <Card className="bg-[#1a1b1f] border-[#2c2d33]">
           <CardHeader>
-            <CardTitle>Transaction Monitor</CardTitle>
+            <CardTitle className="text-[#9d7dda]">Transaction Monitor</CardTitle>
           </CardHeader>
           <CardContent>
             <TransactionFilters />

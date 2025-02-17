@@ -13,10 +13,12 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
 
   const sortedTransactions = useMemo(() => {
     return [...transactions].sort((a, b) => {
-      if (sortDirection === "asc") {
-        return a[sortField] > b[sortField] ? 1 : -1;
-      }
-      return a[sortField] < b[sortField] ? 1 : -1;
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      if (aValue === null || bValue === null) return 0;
+      return sortDirection === "asc" ? 
+        (aValue > bValue ? 1 : -1) : 
+        (aValue < bValue ? 1 : -1);
     });
   }, [transactions, sortField, sortDirection]);
 
@@ -30,31 +32,31 @@ export function TransactionTable({ transactions }: TransactionTableProps) {
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border border-[#2c2d33]">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead onClick={() => toggleSort("hash")} className="cursor-pointer">
+          <TableRow className="border-b border-[#2c2d33] hover:bg-[#2c2d33]">
+            <TableHead onClick={() => toggleSort("hash")} className="cursor-pointer text-[#9d7dda]">
               Transaction Hash
             </TableHead>
-            <TableHead onClick={() => toggleSort("from")} className="cursor-pointer">
+            <TableHead onClick={() => toggleSort("from")} className="cursor-pointer text-[#9d7dda]">
               From
             </TableHead>
-            <TableHead onClick={() => toggleSort("to")} className="cursor-pointer">
+            <TableHead onClick={() => toggleSort("to")} className="cursor-pointer text-[#9d7dda]">
               To
             </TableHead>
-            <TableHead onClick={() => toggleSort("value")} className="cursor-pointer">
+            <TableHead onClick={() => toggleSort("value")} className="cursor-pointer text-[#9d7dda]">
               Value (ETH)
             </TableHead>
-            <TableHead onClick={() => toggleSort("gasPrice")} className="cursor-pointer">
+            <TableHead onClick={() => toggleSort("gasPrice")} className="cursor-pointer text-[#9d7dda]">
               Gas Price (Gwei)
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sortedTransactions.map((tx) => (
-            <TableRow key={tx.hash}>
-              <TableCell className="font-mono">{tx.hash.slice(0, 10)}...</TableCell>
+            <TableRow key={tx.hash} className="border-b border-[#2c2d33] hover:bg-[#2c2d33]">
+              <TableCell className="font-mono text-[#9d7dda]">{tx.hash.slice(0, 10)}...</TableCell>
               <TableCell className="font-mono">{tx.from.slice(0, 8)}...</TableCell>
               <TableCell className="font-mono">{tx.to ? `${tx.to.slice(0, 8)}...` : 'Contract Creation'}</TableCell>
               <TableCell>{formatEther(tx.value)}</TableCell>
