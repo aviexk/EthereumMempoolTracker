@@ -41,6 +41,12 @@ export default function Home() {
             <TransactionTable transactions={transactions} />
           </CardContent>
         </Card>
+
+        <footer className="text-center mt-8">
+          <p className="text-muted-foreground text-sm">
+            Made by @aviexkakkar @0xboredagain
+          </p>
+        </footer>
       </div>
     </div>
   );
